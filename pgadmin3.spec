@@ -2,13 +2,15 @@ Summary:	Powerful administration and development platform for the PostgreSQL
 Summary(pl):	Potê¿na platforma do administrowania i programowania bazy PostgreSQL
 Name:		pgadmin3
 Version:	1.2.0
-Release:	1
+Release:	2.1
 Epoch:		0
 License:	Artistic License
 Group:		Applications/Databases
 Source0:	ftp://ftp6.pl.postgresql.org/pub/postgresql/pgadmin3/release/v1.2.0/src/%{name}-%{version}.tar.gz
 # Source0-md5:	09caa00a0249978781215bf3e4ac02b8
+Source1:	%{name}.desktop
 URL:		http://www.pgadmin.org/
+BuildRequires:	automake
 BuildRequires:	postgresql-devel
 BuildRequires:	wxGTK2-unicode-devel >= 2.5.3
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -36,14 +38,19 @@ komunikowania z serwerem baz danych.
 %setup -q
 
 %build
+cp /usr/share/automake/config.sub ./config
 %configure
 %{__make}
 
 %install
 rm -rf $RPM_BUILD_ROOT
+install -d \
+	$RPM_BUILD_ROOT{%{_desktopdir},%{_pixmapsdir}}
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
+install %{SOURCE1} $RPM_BUILD_ROOT%{_desktopdir}
+cp -f ./src/include/images/pgAdmin3.xpm $RPM_BUILD_ROOT%{_pixmapsdir}/pgadmin3.xpm
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -53,3 +60,5 @@ rm -rf $RPM_BUILD_ROOT
 %doc LICENCE.txt README.txt
 %attr(755,root,root) %{_bindir}/*
 %{_datadir}/%{name}
+%{_desktopdir}/pgadmin3.desktop
+%{_pixmapsdir}/pgadmin3.xpm
