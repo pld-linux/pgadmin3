@@ -1,13 +1,13 @@
 Summary:	Powerful administration and development platform for the PostgreSQL
 Summary(pl):	Potê¿na platforma do administrowania i programowania bazy PostgreSQL
 Name:		pgadmin3
-Version:	1.2.0
-Release:	2.1
+Version:	1.2.1
+Release:	0.1
 Epoch:		0
 License:	Artistic License
 Group:		Applications/Databases
-Source0:	ftp://ftp6.pl.postgresql.org/pub/postgresql/pgadmin3/release/v1.2.0/src/%{name}-%{version}.tar.gz
-# Source0-md5:	09caa00a0249978781215bf3e4ac02b8
+Source0:	ftp://ftp6.pl.postgresql.org/pub/postgresql/pgadmin3/release/v%{version}/src/%{name}-%{version}.tar.gz
+# Source0-md5:	e12f7a3d0212f7ab96c3edaab1418361
 Source1:	%{name}.desktop
 URL:		http://www.pgadmin.org/
 BuildRequires:	automake
