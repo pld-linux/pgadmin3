@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=pgAdmin III
+Comment=PostgreSQL frontend
+Comment[pl]=Narzêdzie do PostgreSQL
+Exec=pgadmin3
+Icon=pgadmin3.xpm
+Terminal=false
+Type=Application
+Categories=Office;Database;
+Encoding=UTF-8
+DocPath=/usr/share/pgadmin3/docs/en_US/index.html
+# vi: encoding=utf-8
