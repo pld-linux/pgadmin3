@@ -39,7 +39,8 @@ komunikowania z serwerem baz danych.
 
 %build
 cp /usr/share/automake/config.sub ./config
-%configure
+%configure \
+	--with-wx-config=wx-gtk2-unicode-config
 %{__make}
 
 %install
