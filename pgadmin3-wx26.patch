@@ -1,0 +1,35 @@
+--- configure.orig	2005-04-28 20:24:47.932537504 +0200
++++ configure	2005-04-28 20:26:12.964610664 +0200
+@@ -5006,6 +5006,9 @@
+     # Which version of wxWindows is this?
+     WX_VERSION=`${WX_CONFIG} --version`
+     case "${WX_VERSION}" in
++        2.6*)
++            WX_VERSION="2.6"
++            ;;
+         2.5*)
+             WX_VERSION="2.5"
+             ;;
+@@ -5219,7 +5222,7 @@
+     fi
+ 
+     WX_NEW_CPPFLAGS=`${WX_CONFIG} --cxxflags`
+-    CPPFLAGS="$CPPFLAGS $WX_NEW_CPPFLAGS -I${WX_HOME}/include/wx-2.5"
++    CPPFLAGS="$CPPFLAGS $WX_NEW_CPPFLAGS -I${WX_HOME}/include/wx-${WX_VERSION}"
+     case "${host}" in
+         *-apple-darwin*)
+             CPPFLAGS="$CPPFLAGS -no-cpp-precomp -fno-rtti"
+@@ -5228,11 +5231,11 @@
+             ;;
+     esac
+     wx_wx_h="yes"
+-    if test ! -f "${WX_HOME}/include/wx-2.5/wx/version.h"
++    if test ! -f "${WX_HOME}/include/wx-${WX_VERSION}/wx/version.h"
+     then
+         wx_wx_h="no"
+     fi
+-    if test ! -f "${WX_HOME}/include/wx-2.5/wx/stc/stc.h"
++    if test ! -f "${WX_HOME}/include/wx-${WX_VERSION}/wx/stc/stc.h"
+     then
+         { { echo "$as_me:$LINENO: error: you need to install the stc package from wxWindows/contrib/src/stc" >&5
+ echo "$as_me: error: you need to install the stc package from wxWindows/contrib/src/stc" >&2;}
