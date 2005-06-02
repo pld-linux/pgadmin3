@@ -4,7 +4,7 @@ Name:		pgadmin3
 Version:	1.2.2
 Release:	1
 Epoch:		0
-License:	Artistic License
+License:	Artistic
 Group:		Applications/Databases
 Source0:	ftp://ftp6.pl.postgresql.org/pub/postgresql/pgadmin3/release/v%{version}/src/%{name}-%{version}.tar.gz
 # Source0-md5:	daead4660883f423db31f2019cac2f34
@@ -35,10 +35,10 @@ instalatorem i nie wymaga ¿adnego dodatkowego sterownika do
 komunikowania z serwerem baz danych.
 
 %prep
-%setup  -q
+%setup -q
 
 %build
-cp /usr/share/automake/config.sub ./config
+cp /usr/share/automake/config.sub config
 %configure \
 	--with-wx-config=wx-gtk2-unicode-config
 %{__make}
