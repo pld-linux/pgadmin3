@@ -9,6 +9,7 @@ Group:		Applications/Databases
 Source0:	ftp://ftp6.pl.postgresql.org/pub/postgresql/pgadmin3/release/v%{version}/src/%{name}-%{version}.tar.gz
 # Source0-md5:	daead4660883f423db31f2019cac2f34
 Source1:	%{name}.desktop
+Patch0:		%{name}-am_no_debug.patch
 URL:		http://www.pgadmin.org/
 BuildRequires:	automake
 BuildRequires:	postgresql-devel
@@ -36,6 +37,7 @@ komunikowania z serwerem baz danych.
 
 %prep
 %setup -q
+%patch0 -p1
 
 %build
 cp /usr/share/automake/config.sub config
