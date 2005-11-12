@@ -1,20 +1,19 @@
-%define		_status	beta
-%define		_beta	3
 Summary:	Powerful administration and development platform for the PostgreSQL
 Summary(pl):	Potê¿na platforma do administrowania i programowania bazy PostgreSQL
 Name:		pgadmin3
 Version:	1.4.0
-Release:	0.1.%{_status}%{_beta}
+Release:	1
 Epoch:		0
 License:	Artistic
 Group:		Applications/Databases
-Source0:	ftp://ftp6.pl.postgresql.org/pub/postgresql/pgadmin3/%{_status}/src/%{name}-%{version}-%{_status}%{_beta}.tar.gz
-# Source0-md5:	7220ccfe0732d6258a05fb10770b4168
+Source0:	ftp://ftp6.pl.postgresql.org/pub/postgresql/pgadmin3/release/v%{version}/src/%{name}-%{version}.tar.gz
+# Source0-md5:	a0779079bf579b0cd5e132ac5372f7f3
 Source1:	%{name}.desktop
 URL:		http://www.pgadmin.org/
 BuildRequires:	automake
 BuildRequires:	postgresql-devel
 BuildRequires:	wxGTK2-unicode-gl-devel >= 2.6.0
+BuildRequires:	openssl-devel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -37,7 +36,7 @@ instalatorem i nie wymaga ¿adnego dodatkowego sterownika do
 komunikowania z serwerem baz danych.
 
 %prep
-%setup -q -n %{name}-%{version}-%{_status}%{_beta}
+%setup -q -n %{name}-%{version}
 
 %build
 cp /usr/share/automake/config.sub config
