@@ -36,7 +36,7 @@ instalatorem i nie wymaga ¿adnego dodatkowego sterownika do
 komunikowania z serwerem baz danych.
 
 %prep
-%setup -q -n %{name}-%{version}
+%setup -q
 
 %build
 cp /usr/share/automake/config.sub config
