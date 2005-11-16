@@ -11,9 +11,9 @@ Source0:	ftp://ftp6.pl.postgresql.org/pub/postgresql/pgadmin3/release/v%{version
 Source1:	%{name}.desktop
 URL:		http://www.pgadmin.org/
 BuildRequires:	automake
+BuildRequires:	openssl-devel
 BuildRequires:	postgresql-devel
 BuildRequires:	wxGTK2-unicode-gl-devel >= 2.6.0
-BuildRequires:	openssl-devel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
