@@ -40,12 +40,17 @@ komunikowania z serwerem baz danych.
 
 %package -n postgresql-module-pgadmin3
 Summary:	Full instrumentation when using PgAdmin
+Summary(pl):	Pe³na obs³uga dla funkcjonalno¶ci PgAdmina
 Group:		Applications/Databases
 Requires:	postgresql >= 8.1
 
 %description -n postgresql-module-pgadmin3
-Module which implements a number of support functions which pgAdmin
+Module which implements a number of support functions which PgAdmin
 will use to provide additional functionality if installed on a server.
+
+%description -n postgresql-module-pgadmin3 -l pl
+Ten modu³ implementuje wiele funkcji pomocniczych, które u¿ywa PgAdmin
+do zapewnienia dodatkowej funkcjonalno¶ci.
 
 %prep
 %setup -q
