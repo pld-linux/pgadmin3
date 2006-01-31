@@ -2,7 +2,7 @@ Summary:	Powerful administration and development platform for the PostgreSQL
 Summary(pl):	Potê¿na platforma do administrowania i programowania bazy PostgreSQL
 Name:		pgadmin3
 Version:	1.4.1
-Release:	1
+Release:	2
 Epoch:		0
 License:	Artistic
 Group:		Applications/Databases
@@ -13,8 +13,11 @@ URL:		http://www.pgadmin.org/
 BuildRequires:	automake
 BuildRequires:	openssl-devel
 BuildRequires:	postgresql-devel
+BuildRequires:	postgresql-backend-devel
 BuildRequires:	wxGTK2-unicode-gl-devel >= 2.6.0
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
+
+%define		_pgmoduledir		%{_libdir}/postgresql
 
 %description
 pgAdmin III is designed to answer the needs of all users, from writing
@@ -35,6 +38,15 @@ stronie serwera i wiele wiêcej. pgAdmin III zosta³ wydany z
 instalatorem i nie wymaga ¿adnego dodatkowego sterownika do
 komunikowania z serwerem baz danych.
 
+%package -n postgresql-module-pgadmin3
+Summary:	Full instrumentation when using PgAdmin
+Group:		Applications/Databases
+Requires:	postgresql >= 8.1
+
+%description -n postgresql-module-pgadmin3
+Module which implements a number of support functions which pgAdmin
+will use to provide additional functionality if installed on a server.
+
 %prep
 %setup -q
 
@@ -44,15 +56,21 @@ cp /usr/share/automake/config.sub config
 	--with-wx-config=wx-gtk2-unicode-config
 %{__make}
 
+sed 's#MODULE_PATHNAME#%{_pgmoduledir}/admin81#g' xtra/admin81/admin81.sql.in > xtra/admin81/admin81.sql
+%{__cc} %{rpmcflags} -fpic -I. -I%{_includedir}/postgresql/server -c -o xtra/admin81/admin81.o xtra/admin81/admin81.c -MMD
+%{__cc} -shared %{rpmldflags} -o xtra/admin81/admin81.so xtra/admin81/admin81.o
+
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d \
-	$RPM_BUILD_ROOT{%{_desktopdir},%{_pixmapsdir}}
+	$RPM_BUILD_ROOT{%{_desktopdir},%{_pixmapsdir},%{_pgmoduledir}}
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 install %{SOURCE1} $RPM_BUILD_ROOT%{_desktopdir}
-cp -f ./src/include/images/pgAdmin3.xpm $RPM_BUILD_ROOT%{_pixmapsdir}/pgadmin3.xpm
+install src/include/images/pgAdmin3.xpm $RPM_BUILD_ROOT%{_pixmapsdir}/pgadmin3.xpm
+
+install xtra/admin81/admin81.so $RPM_BUILD_ROOT%{_pgmoduledir}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -64,3 +82,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/%{name}
 %{_desktopdir}/pgadmin3.desktop
 %{_pixmapsdir}/pgadmin3.xpm
+
+%files -n postgresql-module-pgadmin3
+%defattr(644,root,root,755)
+%doc xtra/admin81/README* xtra/admin81/*.sql
+%attr(755,root,root) %{_pgmoduledir}/*.so
