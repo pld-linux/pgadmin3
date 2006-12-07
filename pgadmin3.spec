@@ -2,21 +2,24 @@ Summary:	Powerful administration and development platform for the PostgreSQL
 Summary(pl):	Potê¿na platforma do administrowania i programowania bazy PostgreSQL
 Name:		pgadmin3
 Version:	1.6.1
-Release:	0.1
+Release:	0.2
 Epoch:		0
 License:	Artistic
 Group:		Applications/Databases
 Source0:	ftp://ftp6.pl.postgresql.org/pub/postgresql/pgadmin3/release/v%{version}/src/%{name}-%{version}.tar.gz
 # Source0-md5:	0cdfffceb09e40787ead39541bcd5683
 Source1:	%{name}.desktop
+Patch0:		%{name}-m4.patch
+Patch1:		%{name}-wx.patch
 URL:		http://www.pgadmin.org/
+BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	libxml2 >= 2.6.18
 BuildRequires:	libxslt >= 1.1
 BuildRequires:	openssl-devel
 BuildRequires:	postgresql-devel >= 7.4
 BuildRequires:	postgresql-backend-devel >= 7.4
-BuildRequires:	wxGTK2-unicode-gl-devel >= 2.7.0
+BuildRequires:	wxGTK2-unicode-gl-devel >= 2.8.0
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_pgmoduledir		%{_libdir}/postgresql
@@ -56,11 +59,17 @@ do zapewnienia dodatkowej funkcjonalno¶ci.
 
 %prep
 %setup -q
+%patch0 -p1
+%patch1 -p1
 
 %build
-cp /usr/share/automake/config.sub config
+rm -f config/*
+%{__aclocal}
+%{__autoconf}
+%{__automake}
 %configure \
-	--with-wx-config=wx-gtk2-unicode-config
+	--with-wx-config="%{_bindir}/wx-gtk2-unicode-config" \
+	--with-wx-version="2.8"
 %{__make}
 
 sed 's#MODULE_PATHNAME#%{_pgmoduledir}/admin81#g' xtra/admin81/admin81.sql.in > xtra/admin81/admin81.sql
@@ -84,7 +93,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc LICENCE.txt README.txt
+%doc LICENSE README
 %attr(755,root,root) %{_bindir}/*
 %{_datadir}/%{name}
 %{_desktopdir}/pgadmin3.desktop
