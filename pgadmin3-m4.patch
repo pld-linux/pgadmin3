@@ -39,18 +39,4 @@ diff -urN pgadmin3-1.6.1.org/acinclude.m4 pgadmin3-1.6.1/acinclude.m4
  	])
  ])
  
-@@ -437,11 +413,11 @@
- 			pgadmin3_LDADD=`${WX_CONFIG} ${WX_STATIC} --libs std,stc,ogl --unicode=yes --debug=yes --version=${WX_VERSION} 2> /dev/null`
- 			pgagent_LDADD=`${WX_CONFIG} ${WX_STATIC} --libs base --unicode=yes --debug=yes --version=${WX_VERSION} 2> /dev/null`
- 		else
--			WX_NEW_CPPFLAGS=`${WX_CONFIG} --cppflags --unicode=yes --debug=no --version=${WX_VERSION} 2> /dev/null`
-+			WX_NEW_CPPFLAGS=`${WX_CONFIG} --cppflags --unicode=yes --debug=no --version=${WX_VERSION}`
- 			CPPFLAGS="$CPPFLAGS $WX_NEW_CPPFLAGS -O2"
- 		
--			pgadmin3_LDADD=`${WX_CONFIG} ${WX_STATIC} --libs std,stc,ogl --unicode=yes --debug=no --version=${WX_VERSION} 2> /dev/null`
--			pgagent_LDADD=`${WX_CONFIG} ${WX_STATIC} --libs base --unicode=yes --debug=no --version=${WX_VERSION} 2> /dev/null`
-+			pgadmin3_LDADD=`${WX_CONFIG} ${WX_STATIC} --libs std,stc,ogl --unicode=yes --debug=no --version=${WX_VERSION}`
-+			pgagent_LDADD=`${WX_CONFIG} ${WX_STATIC} --libs base --unicode=yes --debug=no --version=${WX_VERSION}`
- 		fi
- 
- 		AC_MSG_CHECKING(wxWidgets in ${WX_HOME})
+
