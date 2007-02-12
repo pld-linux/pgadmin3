@@ -1,5 +1,5 @@
 Summary:	Powerful administration and development platform for the PostgreSQL
-Summary(pl):	PotÍøna platforma do administrowania i programowania bazy PostgreSQL
+Summary(pl.UTF-8):   Potƒô≈ºna platforma do administrowania i programowania bazy PostgreSQL
 Name:		pgadmin3
 Version:	1.6.1
 Release:	1
@@ -33,19 +33,19 @@ server-side code editor and much more. pgAdmin III is released with an
 installer and does not require any additional driver to communicate
 with the database server.
 
-%description -l pl
-pgAdmin III zosta≥ zaprojektowany jako odpowiedº na potrzeby
-wszystkich uøytkownikÛw, od pisania prostych zapytaÒ SQL do tworzenia
-skomplikowanych baz danych. Graficzny interfejs obs≥uguje wszystkie
-moøliwo∂ci PostgreSQL-a i u≥atwia administrowanie. Aplikacja zawiera
-takøe narzÍdzie do budowania zapytaÒ, edytor SQL, edytor kodu po
-stronie serwera i wiele wiÍcej. pgAdmin III zosta≥ wydany z
-instalatorem i nie wymaga øadnego dodatkowego sterownika do
+%description -l pl.UTF-8
+pgAdmin III zosta≈Ç zaprojektowany jako odpowied≈∫ na potrzeby
+wszystkich u≈ºytkownik√≥w, od pisania prostych zapyta≈Ñ SQL do tworzenia
+skomplikowanych baz danych. Graficzny interfejs obs≈Çuguje wszystkie
+mo≈ºliwo≈õci PostgreSQL-a i u≈Çatwia administrowanie. Aplikacja zawiera
+tak≈ºe narzƒôdzie do budowania zapyta≈Ñ, edytor SQL, edytor kodu po
+stronie serwera i wiele wiƒôcej. pgAdmin III zosta≈Ç wydany z
+instalatorem i nie wymaga ≈ºadnego dodatkowego sterownika do
 komunikowania z serwerem baz danych.
 
 %package -n postgresql-module-pgadmin3
 Summary:	Full instrumentation when using PgAdmin
-Summary(pl):	Pe≥na obs≥uga dla funkcjonalno∂ci PgAdmina
+Summary(pl.UTF-8):   Pe≈Çna obs≈Çuga dla funkcjonalno≈õci PgAdmina
 Group:		Applications/Databases
 Requires:	postgresql >= 8.1
 
@@ -53,9 +53,9 @@ Requires:	postgresql >= 8.1
 Module which implements a number of support functions which PgAdmin
 will use to provide additional functionality if installed on a server.
 
-%description -n postgresql-module-pgadmin3 -l pl
-Ten modu≥ implementuje wiele funkcji pomocniczych, ktÛre uøywa PgAdmin
-do zapewnienia dodatkowej funkcjonalno∂ci.
+%description -n postgresql-module-pgadmin3 -l pl.UTF-8
+Ten modu≈Ç implementuje wiele funkcji pomocniczych, kt√≥re u≈ºywa PgAdmin
+do zapewnienia dodatkowej funkcjonalno≈õci.
 
 %prep
 %setup -q
