@@ -1,5 +1,5 @@
 Summary:	Powerful administration and development platform for the PostgreSQL
-Summary(pl.UTF-8):   Potężna platforma do administrowania i programowania bazy PostgreSQL
+Summary(pl.UTF-8):	Potężna platforma do administrowania i programowania bazy PostgreSQL
 Name:		pgadmin3
 Version:	1.6.1
 Release:	1
@@ -45,7 +45,7 @@ komunikowania z serwerem baz danych.
 
 %package -n postgresql-module-pgadmin3
 Summary:	Full instrumentation when using PgAdmin
-Summary(pl.UTF-8):   Pełna obsługa dla funkcjonalności PgAdmina
+Summary(pl.UTF-8):	Pełna obsługa dla funkcjonalności PgAdmina
 Group:		Applications/Databases
 Requires:	postgresql >= 8.1
 
