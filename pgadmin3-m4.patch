@@ -1,14 +1,79 @@
-diff -urN pgadmin3-1.6.1.org/acinclude.m4 pgadmin3-1.6.1/acinclude.m4
---- pgadmin3-1.6.1.org/acinclude.m4	2006-11-30 11:48:45.000000000 +0100
-+++ pgadmin3-1.6.1/acinclude.m4	2006-12-08 01:22:54.341264000 +0100
-@@ -47,34 +47,10 @@
+--- pgadmin3/acinclude.m4.org	2007-08-28 12:50:06.399047988 +0200
++++ pgadmin3/acinclude.m4	2007-08-28 12:50:52.597961689 +0200
+@@ -440,63 +440,8 @@
+ 		AC_LANG_SAVE
+ 		AC_LANG_C
+ 
+-                # Check for SSL support
+-                if test "$BUILD_STATIC" = "yes"
+-                then
+-                        AC_MSG_CHECKING(for SSL_connect in libpq.a)
+-                        if test "$(nm ${PG_LIB}/libpq.a | grep -c SSL_connect)" -gt 0
+-                        then
+-                                AC_MSG_RESULT(present)
+-                                PG_SSL="yes"
+-                        else   
+-                                AC_MSG_RESULT(not present)
+-                                PG_SSL="no"
+-                        fi
+-                else
+-		        if test "$build_cpu-$build_vendor" = "powerpc-apple" -o "$build_cpu-$build_vendor" = "i686-apple"
+-        		then
+-                                AC_MSG_CHECKING(for SSL_connect in -lpq)
+-		        	if test "$(otool -L ${PG_LIB}/libpq.?.dylib | grep -c libssl)" -gt 0
+-			        then
+-                                        AC_MSG_RESULT(present)
+-        				PG_SSL="yes"
+-	        		else
+-                                        AC_MSG_RESULT(not present)
+-	        			PG_SSL="no"
+-		        	fi
+-        		else
+-	        		AC_CHECK_LIB(pq, SSL_connect, [PG_SSL=yes], [PG_SSL=no])
+-	        	fi
+-                fi
+-
+-                # Check for Kerberos support
+-                if test "$BUILD_STATIC" = "yes"
+-                then
+-                        AC_MSG_CHECKING(for krb5_free_principal in libpq.a)
+-                        if test "$(nm ${PG_LIB}/libpq.a | grep -c krb5_free_principal)" -gt 0
+-                        then
+-                                AC_MSG_RESULT(present)
+-                                PG_KRB5="yes"
+-                        else
+-                                AC_MSG_RESULT(not present)
+-                                PG_KRB5="no"
+-                        fi
+-                else
+-		        if test "$build_cpu-$build_vendor" = "powerpc-apple" -o "$build_cpu-$build_vendor" = "i686-apple"
+-		        then
+-                                AC_MSG_CHECKING(for krb5_free_principle in -lpq)
+-			        if test "$(otool -L ${PG_LIB}/libpq.?.dylib | grep -c libkrb5)" -gt 0
+-			        then
+-                                        AC_MSG_RESULT(present)
+-				        PG_KRB5="yes"
+-			        else
+-                                        AC_MSG_RESULT(not present)
+-				        PG_KRB5="no"
+-			        fi
+-		        else
+-			        AC_CHECK_LIB(pq, krb5_free_principal, [PG_KRB5=yes], [PG_KRB5=no])
+-		        fi
+-                fi
++		PG_SSL="yes"
++		PG_KRB5="yes"
+ 
+ 		AC_LANG_RESTORE
+ 
+--- pgadmin3/acinclude.m4.org	2007-08-28 12:53:35.228151478 +0200
++++ pgadmin3/acinclude.m4	2007-08-28 12:54:31.519665591 +0200
+@@ -108,41 +108,9 @@
  ####################
  AC_DEFUN([LOCATE_WXWIDGETS],
  [
 -	AC_ARG_WITH(wx, [  --with-wx=DIR	   root directory for wxWidgets installation],
-+	WX_HOME=/usr
-+	AC_ARG_WITH(wx-config, [  --with-wx-config=FILE	wx-config file],
- 	[
+-	[
 -		if test "$withval" != no
 -		then
 -			WX_HOME="$withval"
@@ -30,48 +95,21 @@ diff -urN pgadmin3-1.6.1.org/acinclude.m4 pgadmin3-1.6.1/acinclude.m4
 -				WX_HOME=/usr
 -				if test ! -f "${WX_HOME}/bin/wx-config"
 -				then
--					AC_MSG_ERROR([Could not find your wxWidgets installation. You might need to use the --with-wx=DIR configure option])
+-                    # Search the path
+-				    AC_PATH_PROGS(WX_CONFIG, wx-config)
+-                    if test ! -f "${WX_CONFIG}"
+-				    then
+-                        AC_MSG_ERROR([Could not find your wxWidgets installation. You might need to use the --with-wx=DIR configure option])
+-                    else
+-					   WX_HOME=`${WX_CONFIG} --prefix`
+-                    fi
 -				fi
 -			fi
 -		fi
 -		WX_CONFIG=${WX_HOME}/bin/wx-config
-+		WX_CONFIG="$withval"
++	WX_HOME=/usr
++	AC_ARG_WITH(wx-config, [  --with-wx-config=FILE wx-config file],[
++	WX_CONFIG="$withval"
  	])
  ])
- 
-@@ -320,33 +296,8 @@
- 		AC_LANG_C
- 		AC_CHECK_LIB(pq, PQexec, [PG_LIBPQ=yes], [PG_LIBPQ=no])
- 
--		if test "$build_cpu-$build_vendor" = "powerpc-apple"
--		then
--			echo -n "checking if libpq links against libssl: "
--			if test "$(otool -L ${PG_HOME}/lib/libpq.?.dylib | grep -c libssl)" -gt 0
--			then
--				PG_SSL="yes"
--			else
--				PG_SSL="no"
--			fi
--			echo $PG_SSL
--		else
--			AC_CHECK_LIB(pq, SSL_connect, [PG_SSL=yes], [PG_SSL=no])
--		fi
--
--		if test "$build_cpu-$build_vendor" = "powerpc-apple"
--		then
--			echo -n "checking if libpq links against libkrb5: "
--			if test "$(otool -L ${PG_HOME}/lib/libpq.?.dylib | grep -c libkrb5)" -gt 0
--			then
--				PG_KRB5="yes"
--			else
--				PG_KRB5="no"
--			fi
--			echo $PG_KRB5
--		else
--			AC_CHECK_LIB(pq, krb5_free_principal, [PG_KRB5=yes], [PG_KRB5=no])
--		fi
-+		PG_SSL=yes
-+		PG_KRB5=yes
- 
- 		AC_LANG_RESTORE
  
