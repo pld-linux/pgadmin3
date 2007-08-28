@@ -1,13 +1,14 @@
+%define	snap	beta3
 Summary:	Powerful administration and development platform for the PostgreSQL
 Summary(pl.UTF-8):	Potężna platforma do administrowania i programowania bazy PostgreSQL
 Name:		pgadmin3
-Version:	1.6.3
-Release:	1
+Version:	1.8.0
+Release:	0.%{snap}.1
 Epoch:		0
 License:	Artistic
 Group:		Applications/Databases
-Source0:	ftp://ftp6.pl.postgresql.org/pub/postgresql/pgadmin3/release/v%{version}/src/%{name}-%{version}.tar.gz
-# Source0-md5:	d3ab37cec763895b05803338f09331e4
+Source0:	ftp://ftp6.pl.postgresql.org/pub/postgresql/pgadmin3/release/v%{version}-%{snap}/src/%{name}-%{version}-%{snap}.tar.gz
+# Source0-md5:	e62e72cdaa1dc14c4075acac0815e089
 Source1:	%{name}.desktop
 Patch0:		%{name}-m4.patch
 URL:		http://www.pgadmin.org/
@@ -57,7 +58,7 @@ Ten moduł implementuje wiele funkcji pomocniczych, które używa PgAdmin
 do zapewnienia dodatkowej funkcjonalności.
 
 %prep
-%setup -q
+%setup -q -n %{name}-%{version}-%{snap}
 %patch0 -p1
 
 %build
@@ -82,7 +83,7 @@ install -d \
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 install %{SOURCE1} $RPM_BUILD_ROOT%{_desktopdir}
-install src/include/images/pgAdmin3.xpm $RPM_BUILD_ROOT%{_pixmapsdir}/pgadmin3.xpm
+install pkg/debian/pgadmin3.xpm $RPM_BUILD_ROOT%{_pixmapsdir}/pgadmin3.xpm
 
 install xtra/admin81/admin81.so $RPM_BUILD_ROOT%{_pgmoduledir}
 
