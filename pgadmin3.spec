@@ -1,4 +1,4 @@
-%define	snap	beta4
+%define	snap	beta5
 Summary:	Powerful administration and development platform for the PostgreSQL
 Summary(pl.UTF-8):	Potężna platforma do administrowania i programowania bazy PostgreSQL
 Name:		pgadmin3
@@ -8,7 +8,7 @@ Epoch:		0
 License:	Artistic
 Group:		Applications/Databases
 Source0:	ftp://ftp6.pl.postgresql.org/pub/postgresql/pgadmin3/release/v%{version}-%{snap}/src/%{name}-%{version}-%{snap}.tar.gz
-# Source0-md5:	7322de7a9e581c1e42ae1679dcfea0b6
+# Source0-md5:	2029ee47797f87d4fa086eb6e4ae1e9f
 Source1:	%{name}.desktop
 Patch0:		%{name}-m4.patch
 URL:		http://www.pgadmin.org/
