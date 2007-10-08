@@ -14,7 +14,7 @@ Patch0:		%{name}-m4.patch
 URL:		http://www.pgadmin.org/
 BuildRequires:	autoconf
 BuildRequires:	automake
-BuildRequires:	libxml2 >= 2.6.18
+BuildRequires:	libxml2-devel >= 2.6.18
 BuildRequires:	libxslt-devel >= 1.1
 BuildRequires:	openssl-devel
 BuildRequires:	postgresql-devel >= 7.4
