@@ -57,7 +57,7 @@ Ten moduł implementuje wiele funkcji pomocniczych, które używa PgAdmin
 do zapewnienia dodatkowej funkcjonalności.
 
 %prep
-%setup -q -n %{name}-%{version}
+%setup -q
 %patch0 -p1
 
 %build
