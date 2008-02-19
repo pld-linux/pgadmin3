@@ -1,13 +1,13 @@
 Summary:	Powerful administration and development platform for the PostgreSQL
 Summary(pl.UTF-8):	Potężna platforma do administrowania i programowania bazy PostgreSQL
 Name:		pgadmin3
-Version:	1.8.1
+Version:	1.8.2
 Release:	1
 Epoch:		0
 License:	Artistic
 Group:		Applications/Databases
 Source0:	ftp://ftp6.pl.postgresql.org/pub/postgresql/pgadmin3/release/v%{version}/src/%{name}-%{version}.tar.gz
-# Source0-md5:	8413ea6f8830b331d2bde671208f0479
+# Source0-md5:	14d240c819741d33ee70af6da40efdb3
 Source1:	%{name}.desktop
 Patch0:		%{name}-m4.patch
 URL:		http://www.pgadmin.org/
@@ -16,8 +16,8 @@ BuildRequires:	automake
 BuildRequires:	libxml2-devel >= 2.6.18
 BuildRequires:	libxslt-devel >= 1.1
 BuildRequires:	openssl-devel
-BuildRequires:	postgresql-devel >= 7.4
-BuildRequires:	postgresql-backend-devel >= 7.4
+BuildRequires:	postgresql-devel >= 8.3.0
+BuildRequires:	postgresql-backend-devel >= 8.3.0
 BuildRequires:	wxGTK2-unicode-gl-devel >= 2.8.0
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -71,6 +71,7 @@ rm -f config/*
 %{__make}
 
 sed 's#MODULE_PATHNAME#%{_pgmoduledir}/admin81#g' xtra/admin81/admin81.sql.in > xtra/admin81/admin81.sql
+sed -i -e 's#DLLIMPORT#PGDLLIMPORT#g' xtra/admin81/admin81.c
 %{__cc} %{rpmcflags} -fpic -I. -I%{_includedir}/postgresql/server -c -o xtra/admin81/admin81.o xtra/admin81/admin81.c -MMD
 %{__cc} -shared %{rpmldflags} -o xtra/admin81/admin81.so xtra/admin81/admin81.o
 
