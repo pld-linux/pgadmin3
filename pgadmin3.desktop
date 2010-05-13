@@ -6,6 +6,6 @@ Exec=pgadmin3
 Icon=pgadmin3
 Terminal=false
 Type=Application
-Categories=Office;Database;
+Categories=Database;System;
 DocPath=/usr/share/pgadmin3/docs/en_US/index.html
 # vi: encoding=utf-8
