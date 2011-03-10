@@ -16,8 +16,8 @@ BuildRequires:	automake
 BuildRequires:	libxml2-devel >= 2.6.18
 BuildRequires:	libxslt-devel >= 1.1
 BuildRequires:	openssl-devel
-BuildRequires:	postgresql-devel >= 8.3.0
 BuildRequires:	postgresql-backend-devel >= 8.3.0
+BuildRequires:	postgresql-devel >= 8.3.0
 BuildRequires:	wxGTK2-unicode-gl-devel >= 2.8.0
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
