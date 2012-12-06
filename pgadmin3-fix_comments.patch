@@ -1,0 +1,468 @@
+diff --git a/pgadmin/schema/edbPackage.cpp b/pgadmin/schema/edbPackage.cpp
+index 38f834b..ba23b59 100644
+--- a/pgadmin/schema/edbPackage.cpp
++++ b/pgadmin/schema/edbPackage.cpp
+@@ -243,7 +243,7 @@ pgObject *edbPackageFactory::CreateObjects(pgCollection *collection, ctlTree *br
+ 		sql = wxT("SELECT nsp.oid, nsp.xmin, nspname AS pkgname,\n") + pkgsrc +
+ 		      wxT("       nspacl AS pkgacl, pg_get_userbyid(nspowner) AS owner, description\n")
+ 		      wxT("  FROM pg_namespace nsp")
+-		      wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=nsp.oid\n")
++		      wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=nsp.oid AND des.classoid='pg_namespace'::regclass)\n")
+ 		      + whereclause 
+ 		      + restriction +
+ 		      wxT("  ORDER BY nspname;");
+diff --git a/pgadmin/schema/gpExtTable.cpp b/pgadmin/schema/gpExtTable.cpp
+index f5305dc..e9b54c2 100644
+--- a/pgadmin/schema/gpExtTable.cpp
++++ b/pgadmin/schema/gpExtTable.cpp
+@@ -489,7 +489,7 @@ pgObject *gpExtTableFactory::CreateObjects(pgCollection *collection, ctlTree *br
+ 	pgSet *extTables = collection->GetDatabase()->ExecuteSet(
+ 	                       wxT("SELECT c.oid, c.xmin, c.relname, pg_get_userbyid(c.relowner) AS exttableowner, c.relacl AS relacl, description \n")
+ 	                       wxT("  FROM pg_class c\n")
+-	                       wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=c.oid and des.objsubid=0)\n")
++	                       wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=c.oid AND des.objsubid=0 AND des.classoid='pg_class'::regclass)\n")
+ 	                       wxT(" WHERE  (c.relkind = 'x' OR (c.relkind = 'r' AND c.relstorage = 'x'))\n")
+ 	                       wxT("   AND relnamespace = ") + collection->GetSchema()->GetOidStr() + wxT("\n")
+ 	                       + restriction
+diff --git a/pgadmin/schema/gpPartition.cpp b/pgadmin/schema/gpPartition.cpp
+index 77ab9de..6640861 100644
+--- a/pgadmin/schema/gpPartition.cpp
++++ b/pgadmin/schema/gpPartition.cpp
+@@ -137,7 +137,7 @@ pgObject *gpPartitionFactory::CreateObjects(pgCollection *coll, ctlTree *browser
+ 	query += wxT("  FROM pg_class rel JOIN pg_partition_rule pr ON(rel.oid = pr.parchildrelid) JOIN pg_partition p ON (pr.paroid = p.oid)\n")
+ 	         wxT("  JOIN pg_inherits i ON (rel.oid = i.inhrelid) \n")
+ 	         wxT("  LEFT OUTER JOIN pg_tablespace ta on ta.oid=rel.reltablespace\n")
+-	         wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=rel.oid AND des.objsubid=0)\n")
++	         wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=rel.oid AND des.objsubid=0 AND des.classoid='pg_class'::regclass)\n")
+ 	         wxT("  LEFT OUTER JOIN pg_constraint c ON c.conrelid=rel.oid AND c.contype='p'\n");
+ 	query += wxT("  LEFT OUTER JOIN gp_distribution_policy gpd ON gpd.localoid=rel.oid\n");
+ 	query += wxT(" WHERE relkind = 'r' ");
+diff --git a/pgadmin/schema/pgAggregate.cpp b/pgadmin/schema/pgAggregate.cpp
+index d48a097..435b81c 100644
+--- a/pgadmin/schema/pgAggregate.cpp
++++ b/pgadmin/schema/pgAggregate.cpp
+@@ -266,7 +266,7 @@ pgObject *pgAggregateFactory::CreateObjects(pgCollection *collection, ctlTree *b
+ 	                    wxT("  JOIN pg_proc pr ON pr.oid = ag.aggfnoid\n")
+ 	                    wxT("  JOIN pg_type tt on tt.oid=aggtranstype\n")
+ 	                    wxT("  JOIN pg_type tf on tf.oid=prorettype\n")
+-	                    wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=aggfnoid::oid\n")
++	                    wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=aggfnoid::oid AND des.classoid='pg_aggregate'::regclass)\n")
+ 	                    wxT(" WHERE pronamespace = ") + collection->GetSchema()->GetOidStr()
+ 	                    + restriction
+ 	                    + wxT("\n ORDER BY aggname"));
+diff --git a/pgadmin/schema/pgCast.cpp b/pgadmin/schema/pgCast.cpp
+index 0407f52..c861023 100644
+--- a/pgadmin/schema/pgCast.cpp
++++ b/pgadmin/schema/pgCast.cpp
+@@ -172,7 +172,7 @@ pgObject *pgCastFactory::CreateObjects(pgCollection *collection, ctlTree *browse
+ 	                   wxT("  JOIN pg_namespace nt ON nt.oid=tt.typnamespace\n")
+ 	                   wxT("  LEFT JOIN pg_proc pr ON pr.oid=castfunc\n")
+ 	                   wxT("  LEFT JOIN pg_namespace np ON np.oid=pr.pronamespace\n")
+-	                   wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=ca.oid AND des.objsubid=0\n")
++	                   wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=ca.oid AND des.objsubid=0 AND des.classoid='pg_cast'::regclass)\n")
+ 	                   + restriction + systemRestriction +
+ 	                   wxT(" ORDER BY st.typname, tt.typname"));
+ 
+diff --git a/pgadmin/schema/pgCatalogObject.cpp b/pgadmin/schema/pgCatalogObject.cpp
+index c8298b2..e4521a9 100644
+--- a/pgadmin/schema/pgCatalogObject.cpp
++++ b/pgadmin/schema/pgCatalogObject.cpp
+@@ -115,7 +115,7 @@ pgObject *pgCatalogObjectFactory::CreateObjects(pgCollection *collection, ctlTre
+ 
+ 	wxString qry = wxT("SELECT c.oid, c.relname, pg_get_userbyid(relowner) AS owner, description\n")
+ 	               wxT("  FROM pg_class c\n")
+-	               wxT("  LEFT OUTER JOIN pg_description d ON d.objoid=c.oid\n")
++	               wxT("  LEFT OUTER JOIN pg_description d ON (d.objoid=c.oid AND d.classoid='pg_class'::regclass)\n")
+ 	               wxT("  WHERE relnamespace = ") + NumToStr(collection->GetSchema()->GetOid()) + wxT("::oid\n");
+ 
+ 	qry += restriction +
+diff --git a/pgadmin/schema/pgCheck.cpp b/pgadmin/schema/pgCheck.cpp
+index 51e1dfb..7fed7cd 100644
+--- a/pgadmin/schema/pgCheck.cpp
++++ b/pgadmin/schema/pgCheck.cpp
+@@ -213,7 +213,7 @@ pgObject *pgCheckFactory::CreateObjects(pgCollection *coll, ctlTree *browser, co
+ 	    wxT("  FROM pg_constraint c\n")
+ 	    wxT("  JOIN pg_class cl ON cl.oid=conrelid\n")
+ 	    wxT("  JOIN pg_namespace nl ON nl.oid=relnamespace\n")
+-	    wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=c.oid\n")
++	    wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=c.oid AND des.classoid='pg_constraint'::regclass)\n")
+ 	    wxT(" WHERE contype = 'c' AND conrelid =  ") + NumToStr(collection->GetOid())
+ 	    + restriction + wxT("::oid\n")
+ 	    wxT("UNION\n")
+@@ -223,7 +223,7 @@ pgObject *pgCheckFactory::CreateObjects(pgCollection *coll, ctlTree *browser, co
+ 	    wxT("  FROM pg_constraint c\n")
+ 	    wxT("  JOIN pg_type t ON t.oid=contypid\n")
+ 	    wxT("  JOIN pg_namespace nl ON nl.oid=typnamespace\n")
+-	    wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=t.oid\n")
++	    wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=t.oid AND des.classoid='pg_constraint'::regclass)\n")
+ 	    wxT(" WHERE contype = 'c' AND contypid =  ") + NumToStr(collection->GetOid())
+ 	    + restriction + wxT("::oid\n")
+ 	    wxT(" ORDER BY conname");
+diff --git a/pgadmin/schema/pgCollation.cpp b/pgadmin/schema/pgCollation.cpp
+index 39767ce..b75baaf 100644
+--- a/pgadmin/schema/pgCollation.cpp
++++ b/pgadmin/schema/pgCollation.cpp
+@@ -169,7 +169,7 @@ pgObject *pgCollationFactory::CreateObjects(pgCollection *collection, ctlTree *b
+ 	                        wxT("       pg_get_userbyid(c.collowner) as cowner, description\n")
+ 	                        wxT("  FROM pg_collation c\n")
+ 	                        wxT("  JOIN pg_namespace n ON n.oid=c.collnamespace\n")
+-	                        wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=c.oid\n")
++	                        wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=c.oid AND des.classoid='pg_collation'::regclass)\n")
+ 	                        wxT(" WHERE c.collnamespace = ") + NumToStr(collection->GetSchema()->GetOid()) + wxT("::oid\n")
+ 	                        + restriction +
+ 	                        wxT(" ORDER BY c.collname"));
+diff --git a/pgadmin/schema/pgColumn.cpp b/pgadmin/schema/pgColumn.cpp
+index 49a44d6..70a5f39 100644
+--- a/pgadmin/schema/pgColumn.cpp
++++ b/pgadmin/schema/pgColumn.cpp
+@@ -547,7 +547,7 @@ pgObject *pgColumnFactory::CreateObjects(pgCollection *coll, ctlTree *browser, c
+ 	       wxT("  JOIN pg_namespace na ON na.oid=cl.relnamespace\n")
+ 	       wxT("  LEFT OUTER JOIN pg_type et ON et.oid=ty.typelem\n")
+ 	       wxT("  LEFT OUTER JOIN pg_attrdef def ON adrelid=att.attrelid AND adnum=att.attnum\n")
+-	       wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=att.attrelid AND des.objsubid=att.attnum\n")
++	       wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=att.attrelid AND des.objsubid=att.attnum AND des.classoid='pg_attribute'::regclass)\n")
+ 	       wxT("  LEFT OUTER JOIN (pg_depend JOIN pg_class cs ON objid=cs.oid AND cs.relkind='S') ON refobjid=att.attrelid AND refobjsubid=att.attnum\n")
+ 	       wxT("  LEFT OUTER JOIN pg_namespace ns ON ns.oid=cs.relnamespace\n")
+ 	       wxT("  LEFT OUTER JOIN pg_index pi ON pi.indrelid=att.attrelid AND indisprimary\n");
+diff --git a/pgadmin/schema/pgConversion.cpp b/pgadmin/schema/pgConversion.cpp
+index 859f350..6b21fac 100644
+--- a/pgadmin/schema/pgConversion.cpp
++++ b/pgadmin/schema/pgConversion.cpp
+@@ -162,7 +162,7 @@ pgObject *pgConversionFactory::CreateObjects(pgCollection *collection, ctlTree *
+ 	                         wxT("  FROM pg_conversion co\n")
+ 	                         wxT("  JOIN pg_proc pr ON pr.oid=conproc\n")
+ 	                         wxT("  JOIN pg_namespace na ON na.oid=pr.pronamespace\n")
+-	                         wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=co.oid AND des.objsubid=0\n")
++	                         wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=co.oid AND des.objsubid=0 AND des.classoid='pg_conversion'::regclass)\n")
+ 	                         wxT(" WHERE connamespace = ") + collection->GetSchema()->GetOidStr()
+ 	                         + restriction + wxT("\n")
+ 	                         wxT(" ORDER BY conname"));
+diff --git a/pgadmin/schema/pgDatabase.cpp b/pgadmin/schema/pgDatabase.cpp
+index 7adb8fd..f726264 100644
+--- a/pgadmin/schema/pgDatabase.cpp
++++ b/pgadmin/schema/pgDatabase.cpp
+@@ -831,7 +831,7 @@ pgObject *pgDatabaseFactory::CreateObjects(pgCollection *collection, ctlTree *br
+ 		                datconnlimit + datcollate + datctype + seclabelsql +
+ 		                wxT("  FROM pg_database db\n")
+ 		                wxT("  LEFT OUTER JOIN pg_tablespace ta ON db.dattablespace=ta.OID\n")
+-		                wxT("  LEFT OUTER JOIN pg_shdescription descr ON (db.oid=descr.objoid AND descr.objoid='pg_database'::regclass)\n")
++		                wxT("  LEFT OUTER JOIN pg_shdescription descr ON (db.oid=descr.objoid AND descr.classoid='pg_database'::regclass)\n")
+ 		                + restr +
+ 		                wxT(" ORDER BY datname"));
+ 	}
+@@ -847,7 +847,7 @@ pgObject *pgDatabaseFactory::CreateObjects(pgCollection *collection, ctlTree *br
+ 		                wxT("  LEFT OUTER JOIN pg_tablespace ta ON db.dattablespace=ta.OID\n")
+ 		                wxT("  LEFT OUTER JOIN ")
+ 		                + wxString(collection->GetConnection()->BackendMinimumVersion(8, 2) ? wxT("pg_shdescription") : wxT("pg_description")) +
+-		                wxT(" descr ON db.oid=descr.objoid\n")
++		                wxT(" descr ON (db.oid=descr.objoid AND descr.classoid='pg_database'::regclass)\n")
+ 		                + restr +
+ 		                wxT(" ORDER BY datname"));
+ 	else
+@@ -857,7 +857,7 @@ pgObject *pgDatabaseFactory::CreateObjects(pgCollection *collection, ctlTree *br
+ 		                wxT("has_database_privilege(db.oid, 'CREATE') as cancreate,\n")
+ 		                wxT("descr.description\n")
+ 		                wxT("  FROM pg_database db\n")
+-		                wxT("  LEFT OUTER JOIN pg_description descr ON db.oid=descr.objoid\n")
++		                wxT("  LEFT OUTER JOIN pg_description descr ON (db.oid=descr.objoid AND descr.classoid='pg_database'::regclass)\n")
+ 		                + restr +
+ 		                wxT(" ORDER BY datname"));
+ 
+diff --git a/pgadmin/schema/pgDomain.cpp b/pgadmin/schema/pgDomain.cpp
+index a3308bd..319b0c6 100644
+--- a/pgadmin/schema/pgDomain.cpp
++++ b/pgadmin/schema/pgDomain.cpp
+@@ -273,7 +273,7 @@ pgObject *pgDomainFactory::CreateObjects(pgCollection *collection, ctlTree *brow
+ 	sql += wxT("\n   FROM pg_type d\n")
+ 	       wxT("  JOIN pg_type b ON b.oid = d.typbasetype\n")
+ 	       wxT("  JOIN pg_namespace bn ON bn.oid=b.typnamespace\n")
+-	       wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=d.oid\n");
++	       wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=d.oid AND des.classoid='pg_type'::regclass)\n");
+ 	if (collection->GetDatabase()->BackendMinimumVersion(9, 1))
+ 		sql += wxT("  LEFT OUTER JOIN pg_collation c ON d.typcollation=c.oid\n")
+ 		       wxT("  LEFT OUTER JOIN pg_namespace cn ON c.collnamespace=cn.oid\n");
+diff --git a/pgadmin/schema/pgForeignDataWrapper.cpp b/pgadmin/schema/pgForeignDataWrapper.cpp
+index c78b8d2..93ef1d2 100644
+--- a/pgadmin/schema/pgForeignDataWrapper.cpp
++++ b/pgadmin/schema/pgForeignDataWrapper.cpp
+@@ -200,7 +200,7 @@ pgObject *pgForeignDataWrapperFactory::CreateObjects(pgCollection *collection, c
+ 		sql += wxT("  FROM pg_foreign_data_wrapper fdw\n")
+ 		       wxT("  LEFT OUTER JOIN pg_proc vh on vh.oid=fdwhandler\n")
+ 		       wxT("  LEFT OUTER JOIN pg_proc vp on vp.oid=fdwvalidator\n")
+-		       wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=fdw.oid AND des.objsubid=0\n")
++		       wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=fdw.oid AND des.objsubid=0 AND des.classoid='pg_foreign_data_wrapper'::regclass)\n")
+ 		       + restriction + wxT("\n")
+ 		       wxT(" ORDER BY fdwname");
+ 	}
+@@ -213,7 +213,7 @@ pgObject *pgForeignDataWrapperFactory::CreateObjects(pgCollection *collection, c
+ 		      wxT("pg_get_userbyid(fdwowner) as fdwowner\n");
+ 		sql += wxT("  FROM pg_foreign_data_wrapper fdw\n")
+ 		       wxT("  LEFT OUTER JOIN pg_proc vp on vp.oid=fdwvalidator\n")
+-		       wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=fdw.oid AND des.objsubid=0\n")
++		       wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=fdw.oid AND des.objsubid=0 AND des.classoid='pg_foreign_data_wrapper'::regclass)\n")
+ 		       + restriction + wxT("\n")
+ 		       wxT(" ORDER BY fdwname");
+ 	}
+diff --git a/pgadmin/schema/pgForeignKey.cpp b/pgadmin/schema/pgForeignKey.cpp
+index 8a03ed1..14c25c9 100644
+--- a/pgadmin/schema/pgForeignKey.cpp
++++ b/pgadmin/schema/pgForeignKey.cpp
+@@ -295,7 +295,7 @@ pgObject *pgForeignKeyFactory::CreateObjects(pgCollection *coll, ctlTree *browse
+ 	       wxT("  JOIN pg_namespace nl ON nl.oid=cl.relnamespace\n")
+ 	       wxT("  JOIN pg_class cr ON cr.oid=confrelid\n")
+ 	       wxT("  JOIN pg_namespace nr ON nr.oid=cr.relnamespace\n")
+-	       wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=ct.oid\n")
++	       wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=ct.oid AND des.classoid='pg_constraint'::regclass)\n")
+ 	       wxT(" WHERE contype='f' AND conrelid = ") + collection->GetOidStr()
+ 	       + restriction + wxT("\n")
+ 	       wxT(" ORDER BY conname");
+diff --git a/pgadmin/schema/pgForeignServer.cpp b/pgadmin/schema/pgForeignServer.cpp
+index b548e7b..154f151 100644
+--- a/pgadmin/schema/pgForeignServer.cpp
++++ b/pgadmin/schema/pgForeignServer.cpp
+@@ -196,7 +196,7 @@ pgObject *pgForeignServerFactory::CreateObjects(pgCollection *collection, ctlTre
+ 	      wxT("pg_get_userbyid(srvowner) as srvowner\n")
+ 	      wxT("  FROM pg_foreign_server srv\n")
+ 	      wxT("  LEFT OUTER JOIN pg_foreign_data_wrapper fdw on fdw.oid=srvfdw\n")
+-	      wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=srv.oid AND des.objsubid=0\n")
++	      wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=srv.oid AND des.objsubid=0 AND des.classoid='pg_foreign_server'::regclass)\n")
+ 	      wxT(" WHERE srvfdw = ") + collection->GetOidStr()
+ 	      + restriction + wxT("\n")
+ 	      wxT(" ORDER BY srvname");
+diff --git a/pgadmin/schema/pgForeignTable.cpp b/pgadmin/schema/pgForeignTable.cpp
+index de6853b..f8019f5 100644
+--- a/pgadmin/schema/pgForeignTable.cpp
++++ b/pgadmin/schema/pgForeignTable.cpp
+@@ -360,7 +360,7 @@ pgObject *pgForeignTableFactory::CreateObjects(pgCollection *collection, ctlTree
+ 	                wxT("  FROM pg_class c\n")
+ 	                wxT("  JOIN pg_foreign_table ft ON c.oid=ft.ftrelid\n")
+ 	                wxT("  LEFT OUTER JOIN pg_foreign_server fs ON ft.ftserver=fs.oid\n")
+-	                wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=c.oid\n")
++	                wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=c.oid AND des.classoid='pg_class'::regclass)\n")
+ 	                wxT(" WHERE c.relnamespace = ") + collection->GetSchema()->GetOidStr() + wxT("\n")
+ 	                + restriction +
+ 	                wxT(" ORDER BY c.relname");
+diff --git a/pgadmin/schema/pgFunction.cpp b/pgadmin/schema/pgFunction.cpp
+index eb6bdef..07f5056 100644
+--- a/pgadmin/schema/pgFunction.cpp
++++ b/pgadmin/schema/pgFunction.cpp
+@@ -659,7 +659,7 @@ pgFunction *pgFunctionFactory::AppendFunctions(pgObject *obj, pgSchema *schema,
+ 	                       wxT("  JOIN pg_type typ ON typ.oid=prorettype\n")
+ 	                       wxT("  JOIN pg_namespace typns ON typns.oid=typ.typnamespace\n")
+ 	                       wxT("  JOIN pg_language lng ON lng.oid=prolang\n")
+-	                       wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=pr.oid\n")
++	                       wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=pr.oid AND des.classoid='pg_proc'::regclass)\n")
+ 	                       + restriction +
+ 	                       wxT(" ORDER BY proname"));
+ 
+diff --git a/pgadmin/schema/pgIndex.cpp b/pgadmin/schema/pgIndex.cpp
+index dde8537..0e8446e 100644
+--- a/pgadmin/schema/pgIndex.cpp
++++ b/pgadmin/schema/pgIndex.cpp
+@@ -552,8 +552,8 @@ pgObject *pgIndexBaseFactory::CreateObjects(pgCollection *coll, ctlTree *browser
+ 	         wxT("  JOIN pg_am am ON am.oid=cls.relam\n")
+ 	         wxT("  LEFT JOIN pg_depend dep ON (dep.classid = cls.tableoid AND dep.objid = cls.oid AND dep.refobjsubid = '0' AND dep.refclassid=(SELECT oid FROM pg_class WHERE relname='pg_constraint') AND dep.deptype='i')\n")
+ 	         wxT("  LEFT OUTER JOIN pg_constraint con ON (con.tableoid = dep.refclassid AND con.oid = dep.refobjid)\n")
+-	         wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=cls.oid\n")
+-	         wxT("  LEFT OUTER JOIN pg_description desp ON (desp.objoid=con.oid AND desp.objsubid = 0)\n")
++	         wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=cls.oid AND des.classoid='pg_class'::regclass)\n")
++	         wxT("  LEFT OUTER JOIN pg_description desp ON (desp.objoid=con.oid AND desp.objsubid = 0 AND des.classoid='pg_constraint'::regclass)\n")
+ 	         wxT(" WHERE indrelid = ") + collection->GetOidStr()
+ 	         + restriction + wxT("\n")
+ 	         wxT(" ORDER BY cls.relname");
+diff --git a/pgadmin/schema/pgLanguage.cpp b/pgadmin/schema/pgLanguage.cpp
+index 20cb27c..421f152 100644
+--- a/pgadmin/schema/pgLanguage.cpp
++++ b/pgadmin/schema/pgLanguage.cpp
+@@ -184,7 +184,7 @@ pgObject *pgLanguageFactory::CreateObjects(pgCollection *collection, ctlTree *br
+ 	if (collection->GetConnection()->BackendMinimumVersion(9, 0))
+ 		sql += wxT("  LEFT OUTER JOIN pg_proc ip on ip.oid=laninline\n");
+ 	sql += wxT("  LEFT OUTER JOIN pg_proc vp on vp.oid=lanvalidator\n")
+-	       wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=lan.oid AND des.objsubid=0\n")
++	       wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=lan.oid AND des.objsubid=0 AND des.classoid='pg_language'::regclass)\n")
+ 	       wxT(" WHERE lanispl IS TRUE")
+ 	       + restriction + wxT("\n")
+ 	       wxT(" ORDER BY lanname");
+diff --git a/pgadmin/schema/pgOperator.cpp b/pgadmin/schema/pgOperator.cpp
+index eeef02f..4295703 100644
+--- a/pgadmin/schema/pgOperator.cpp
++++ b/pgadmin/schema/pgOperator.cpp
+@@ -271,7 +271,7 @@ pgObject *pgOperatorFactory::CreateObjects(pgCollection *collection, ctlTree *br
+ 		                wxT("  JOIN pg_type et on et.oid=op.oprresult\n")
+ 		                wxT("  LEFT OUTER JOIN pg_operator co ON co.oid=op.oprcom\n")
+ 		                wxT("  LEFT OUTER JOIN pg_operator ne ON ne.oid=op.oprnegate\n")
+-		                wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=op.oid\n")
++		                wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=op.oid AND des.classoid='pg_operator'::regclass)\n")
+ 		                wxT(" WHERE op.oprnamespace = ") + collection->GetSchema()->GetOidStr()
+ 		                + restriction + wxT("\n")
+ 		                wxT(" ORDER BY op.oprname"));
+@@ -294,7 +294,7 @@ pgObject *pgOperatorFactory::CreateObjects(pgCollection *collection, ctlTree *br
+ 		                wxT("  LEFT OUTER JOIN pg_operator rso ON rso.oid=op.oprrsortop\n")
+ 		                wxT("  LEFT OUTER JOIN pg_operator lco ON lco.oid=op.oprltcmpop\n")
+ 		                wxT("  LEFT OUTER JOIN pg_operator gco ON gco.oid=op.oprgtcmpop\n")
+-		                wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=op.oid\n")
++		                wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=op.oid AND des.classoid='pg_operator'::regclass)\n")
+ 		                wxT(" WHERE op.oprnamespace = ") + collection->GetSchema()->GetOidStr()
+ 		                + restriction + wxT("\n")
+ 		                wxT(" ORDER BY op.oprname"));
+diff --git a/pgadmin/schema/pgRule.cpp b/pgadmin/schema/pgRule.cpp
+index 5c58fa2..543adaf 100644
+--- a/pgadmin/schema/pgRule.cpp
++++ b/pgadmin/schema/pgRule.cpp
+@@ -208,7 +208,7 @@ pgObject *pgRuleFactory::CreateObjects(pgCollection *collection, ctlTree *browse
+ 	                   wxT("  FROM pg_rewrite rw\n")
+ 	                   wxT("  JOIN pg_class cl ON cl.oid=rw.ev_class\n")
+ 	                   wxT("  JOIN pg_namespace nsp ON nsp.oid=cl.relnamespace\n")
+-	                   wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=rw.oid\n")
++	                   wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=rw.oid AND des.classoid='pg_rewrite'::regclass)\n")
+ 	                   wxT(" WHERE ev_class = ") + NumToStr(collection->GetOid())
+ 	                   + restriction + wxT("\n")
+ 	                   wxT(" ORDER BY rw.rulename"));
+diff --git a/pgadmin/schema/pgSchema.cpp b/pgadmin/schema/pgSchema.cpp
+index 35f5929..d9fafc5 100644
+--- a/pgadmin/schema/pgSchema.cpp
++++ b/pgadmin/schema/pgSchema.cpp
+@@ -512,7 +512,7 @@ pgObject *pgSchemaBaseFactory::CreateObjects(pgCollection *collection, ctlTree *
+ 		      wxT("       nsp.nspname, nsp.oid, pg_get_userbyid(nspowner) AS namespaceowner, nspacl, description,")
+ 		      wxT("       FALSE as cancreate\n")
+ 		      wxT("  FROM pg_namespace nsp\n")
+-		      wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=nsp.oid\n")
++		      wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=nsp.oid AND des.classoid='pg_namespace'::regclass)\n")
+ 		      + restr +
+ 		      wxT(" ORDER BY 1, nspname");
+ 	}
+@@ -537,7 +537,7 @@ pgObject *pgSchemaBaseFactory::CreateObjects(pgCollection *collection, ctlTree *
+ 			sql += wxT(",\n(SELECT array_agg(provider) FROM pg_seclabels sl2 WHERE sl2.objoid=nsp.oid) AS providers");
+ 		}
+ 		sql += wxT("\n  FROM pg_namespace nsp\n")
+-		       wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=nsp.oid\n")
++		       wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=nsp.oid AND des.classoid='pg_namespace'::regclass)\n")
+ 		       + restr +
+ 		       wxT(" ORDER BY 1, nspname");
+ 	}
+diff --git a/pgadmin/schema/pgSequence.cpp b/pgadmin/schema/pgSequence.cpp
+index 870cf2f..f749491 100644
+--- a/pgadmin/schema/pgSequence.cpp
++++ b/pgadmin/schema/pgSequence.cpp
+@@ -285,7 +285,7 @@ pgObject *pgSequenceFactory::CreateObjects(pgCollection *collection, ctlTree *br
+ 		sql += wxT(",\n(SELECT array_agg(provider) FROM pg_seclabels sl2 WHERE sl2.objoid=cl.oid) AS providers");
+ 	}
+ 	sql += wxT("\n  FROM pg_class cl\n")
+-	       wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=cl.oid\n")
++	       wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=cl.oid AND des.classoid='pg_class'::regclass)\n")
+ 	       wxT(" WHERE relkind = 'S' AND relnamespace  = ") + collection->GetSchema()->GetOidStr()
+ 	       + restriction + wxT("\n")
+ 	       wxT(" ORDER BY relname");
+diff --git a/pgadmin/schema/pgTable.cpp b/pgadmin/schema/pgTable.cpp
+index c919884..bd4f586 100644
+--- a/pgadmin/schema/pgTable.cpp
++++ b/pgadmin/schema/pgTable.cpp
+@@ -1474,7 +1474,7 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
+ 
+ 		query += wxT("  FROM pg_class rel\n")
+ 		         wxT("  LEFT OUTER JOIN pg_tablespace spc on spc.oid=rel.reltablespace\n")
+-		         wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=rel.oid AND des.objsubid=0)\n")
++		         wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=rel.oid AND des.objsubid=0 AND des.classoid='pg_class'::regclass)\n")
+ 		         wxT("  LEFT OUTER JOIN pg_constraint con ON con.conrelid=rel.oid AND con.contype='p'\n");
+ 
+ 		// Add the toast table for vacuum parameters.
+@@ -1508,7 +1508,7 @@ pgObject *pgTableFactory::CreateObjects(pgCollection *collection, ctlTree *brows
+ 		        wxT("                       JOIN pg_proc pc ON pc.pronamespace=pt.pronamespace AND pc.proname='slonyversion'\n")
+ 		        wxT("                     WHERE tgrelid=rel.oid) AS isrepl\n")
+ 		        wxT("  FROM pg_class rel\n")
+-		        wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=rel.oid AND des.objsubid=0)\n")
++		        wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=rel.oid AND des.objsubid=0 AND des.classoid='pg_class'::regclass)\n")
+ 		        wxT("  LEFT OUTER JOIN pg_constraint con ON con.conrelid=rel.oid AND con.contype='p'\n")
+ 		        wxT(" WHERE rel.relkind IN ('r','s','t') AND rel.relnamespace = ") + collection->GetSchema()->GetOidStr() + wxT("\n")
+ 		        + restriction +
+diff --git a/pgadmin/schema/pgTextSearchConfiguration.cpp b/pgadmin/schema/pgTextSearchConfiguration.cpp
+index eb1ed01..5e96462 100644
+--- a/pgadmin/schema/pgTextSearchConfiguration.cpp
++++ b/pgadmin/schema/pgTextSearchConfiguration.cpp
+@@ -193,7 +193,7 @@ pgObject *pgTextSearchConfigurationFactory::CreateObjects(pgCollection *collecti
+ 	                     wxT("SELECT cfg.oid, cfg.cfgname, pg_get_userbyid(cfg.cfgowner) as cfgowner, cfg.cfgparser, parser.prsname as parsername, description\n")
+ 	                     wxT("  FROM pg_ts_config cfg\n")
+ 	                     wxT("  LEFT OUTER JOIN pg_ts_parser parser ON parser.oid=cfg.cfgparser\n")
+-	                     wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=cfg.oid\n")
++	                     wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=cfg.oid AND des.classoid='pg_ts_config'::regclass)\n")
+ 	                     wxT(" WHERE cfg.cfgnamespace = ") + collection->GetSchema()->GetOidStr()
+ 	                     + restriction + wxT("\n")
+ 	                     wxT(" ORDER BY cfg.cfgname"));
+diff --git a/pgadmin/schema/pgTextSearchDictionary.cpp b/pgadmin/schema/pgTextSearchDictionary.cpp
+index 3ae5ab5..d83206a 100644
+--- a/pgadmin/schema/pgTextSearchDictionary.cpp
++++ b/pgadmin/schema/pgTextSearchDictionary.cpp
+@@ -192,7 +192,7 @@ pgObject *pgTextSearchDictionaryFactory::CreateObjects(pgCollection *collection,
+ 	                   wxT("SELECT dict.oid, dict.dictname, pg_get_userbyid(dict.dictowner) as dictowner, t.tmplname, dict.dictinitoption, description\n")
+ 	                   wxT("  FROM pg_ts_dict dict\n")
+ 	                   wxT("  LEFT OUTER JOIN pg_ts_template t ON t.oid=dict.dicttemplate\n")
+-	                   wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=dict.oid\n")
++	                   wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=dict.oid AND des.classoid='pg_ts_dict'::regclass)\n")
+ 	                   wxT(" WHERE dict.dictnamespace = ") + collection->GetSchema()->GetOidStr()
+ 	                   + restriction + wxT("\n")
+ 	                   wxT(" ORDER BY dict.dictname"));
+diff --git a/pgadmin/schema/pgTextSearchParser.cpp b/pgadmin/schema/pgTextSearchParser.cpp
+index 379b1e0..2d466f6 100644
+--- a/pgadmin/schema/pgTextSearchParser.cpp
++++ b/pgadmin/schema/pgTextSearchParser.cpp
+@@ -195,7 +195,7 @@ pgObject *pgTextSearchParserFactory::CreateObjects(pgCollection *collection, ctl
+ 	parsers = collection->GetDatabase()->ExecuteSet(
+ 	              wxT("SELECT prs.oid, prs.prsname, prs.prsstart, prs.prstoken, prs.prsend, prs.prslextype, prs.prsheadline, description\n")
+ 	              wxT("  FROM pg_ts_parser prs\n")
+-	              wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=prs.oid\n")
++	              wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=prs.oid AND des.classoid='pg_ts_parser'::regclass)\n")
+ 	              wxT(" WHERE prs.prsnamespace = ") + collection->GetSchema()->GetOidStr()
+ 	              + restriction + wxT("\n")
+ 	              wxT(" ORDER BY prs.prsname"));
+diff --git a/pgadmin/schema/pgTextSearchTemplate.cpp b/pgadmin/schema/pgTextSearchTemplate.cpp
+index 43dc9e8..d9939e6 100644
+--- a/pgadmin/schema/pgTextSearchTemplate.cpp
++++ b/pgadmin/schema/pgTextSearchTemplate.cpp
+@@ -187,7 +187,7 @@ pgObject *pgTextSearchTemplateFactory::CreateObjects(pgCollection *collection, c
+ 	templates = collection->GetDatabase()->ExecuteSet(
+ 	                wxT("SELECT tmpl.oid, tmpl.tmplname, tmpl.tmplinit, tmpl.tmpllexize, description\n")
+ 	                wxT("  FROM pg_ts_template tmpl\n")
+-	                wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=tmpl.oid\n")
++	                wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=tmpl.oid AND des.classoid='pg_ts_template'::regclass)\n")
+ 	                wxT(" WHERE tmpl.tmplnamespace = ") + collection->GetSchema()->GetOidStr()
+ 	                + restriction + wxT("\n")
+ 	                wxT(" ORDER BY tmpl.tmplname"));
+diff --git a/pgadmin/schema/pgTrigger.cpp b/pgadmin/schema/pgTrigger.cpp
+index 9098777..d131fba 100644
+--- a/pgadmin/schema/pgTrigger.cpp
++++ b/pgadmin/schema/pgTrigger.cpp
+@@ -394,7 +394,7 @@ pgObject *pgTriggerFactory::CreateObjects(pgCollection *coll, ctlTree *browser,
+ 	           wxT("  FROM pg_trigger t\n")
+ 	           wxT("  JOIN pg_class cl ON cl.oid=tgrelid\n")
+ 	           wxT("  JOIN pg_namespace na ON na.oid=relnamespace\n")
+-	           wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=t.oid\n")
++	           wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=t.oid AND des.classoid='pg_trigger'::regclass)\n")
+ 	           wxT("  LEFT OUTER JOIN pg_proc p ON p.oid=t.tgfoid\n")
+ 	           wxT("  LEFT OUTER JOIN pg_language l ON l.oid=p.prolang\n")
+ 	           wxT(" WHERE ");
+diff --git a/pgadmin/schema/pgType.cpp b/pgadmin/schema/pgType.cpp
+index 6faee87..f29459e 100644
+--- a/pgadmin/schema/pgType.cpp
++++ b/pgadmin/schema/pgType.cpp
+@@ -460,7 +460,7 @@ pgObject *pgTypeFactory::CreateObjects(pgCollection *collection, ctlTree *browse
+ 	sql += wxT("\n  FROM pg_type t\n")
+ 	       wxT("  LEFT OUTER JOIN pg_type e ON e.oid=t.typelem\n")
+ 	       wxT("  LEFT OUTER JOIN pg_class ct ON ct.oid=t.typrelid AND ct.relkind <> 'c'\n")
+-	       wxT("  LEFT OUTER JOIN pg_description des ON des.objoid=t.oid\n");
++	       wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=t.oid AND des.classoid='pg_type'::regclass)\n");
+ 
+ 	if (collection->GetDatabase()->BackendMinimumVersion(8, 1))
+ 		sql += wxT(" WHERE t.typtype != 'd' AND t.typname NOT LIKE E'\\\\_%' AND t.typnamespace = ") + collection->GetSchema()->GetOidStr() + wxT("\n");
+diff --git a/pgadmin/schema/pgView.cpp b/pgadmin/schema/pgView.cpp
+index 22a86a0..816901b 100644
+--- a/pgadmin/schema/pgView.cpp
++++ b/pgadmin/schema/pgView.cpp
+@@ -427,7 +427,7 @@ pgObject *pgViewFactory::CreateObjects(pgCollection *collection, ctlTree *browse
+ 		sql += wxT(",\nsubstring(array_to_string(c.reloptions, ',') FROM 'security_barrier=([a-z|0-9]*)') AS security_barrier");
+ 	}
+ 	sql += wxT("\n  FROM pg_class c\n")
+-	       wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=c.oid and des.objsubid=0)\n")
++	       wxT("  LEFT OUTER JOIN pg_description des ON (des.objoid=c.oid and des.objsubid=0 AND des.classoid='pg_class'::regclass)\n")
+ 	       wxT(" WHERE ((c.relhasrules AND (EXISTS (\n")
+ 	       wxT("           SELECT r.rulename FROM pg_rewrite r\n")
+ 	       wxT("            WHERE ((r.ev_class = c.oid)\n")
