@@ -65,8 +65,8 @@ install -d \
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
-install %{SOURCE1} $RPM_BUILD_ROOT%{_desktopdir}
-install pkg/debian/pgadmin3.xpm $RPM_BUILD_ROOT%{_pixmapsdir}/pgadmin3.xpm
+cp -p %{SOURCE1} $RPM_BUILD_ROOT%{_desktopdir}
+cp -p pkg/debian/pgadmin3.xpm $RPM_BUILD_ROOT%{_pixmapsdir}/pgadmin3.xpm
 
 %clean
 rm -rf $RPM_BUILD_ROOT
